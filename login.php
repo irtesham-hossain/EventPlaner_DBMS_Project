@@ -1,22 +1,54 @@
 <?php
 require_once 'config.php';
 
+$error = '';
+$success = '';
+
+// Check if already logged in
+if(isset($_SESSION['user_id'])) {
+    // Redirect based on role
+    if($_SESSION['role'] == 'admin') {
+        header('Location: admin_dashboard.php');
+    } else {
+        header('Location: dashboard.php');
+    }
+    exit();
+}
+
 if($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
     
-    $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$username, $username]);
-    $user = $stmt->fetch();
-    
-    if($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['user_id'];
-        $_SESSION['username'] = $user['username'];
-        header('Location: dashboard.php');
-        exit();
+    if(empty($username) || empty($password)) {
+        $error = "Please enter both username/email and password";
     } else {
-        $error = "Invalid username or password!";
+        // Check if user exists (by username or email)
+        $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$username, $username]);
+        $user = $stmt->fetch();
+        
+        if($user) {
+            // Verify password
+            if(password_verify($password, $user['password'])) {
+                // Login successful - store session
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role'] = $user['role'] ?? 'user';
+                
+                // Redirect based on role
+                if($_SESSION['role'] == 'admin') {
+                    header('Location: admin_dashboard.php');
+                } else {
+                    header('Location: dashboard.php');
+                }
+                exit();
+            } else {
+                $error = "Invalid password!";
+            }
+        } else {
+            $error = "User not found! Please check your username/email or register.";
+        }
     }
 }
 ?>
@@ -26,85 +58,135 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>Login - Event Planner</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
             align-items: center;
         }
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            width: 400px;
+        .container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 10px; 
+            width: 400px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-        h2 {
-            text-align: center;
+        .logo { 
+            text-align: center; 
             margin-bottom: 30px;
+        }
+        .logo-icon { 
+            font-size: 48px; 
+        }
+        .logo-text { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #667eea; 
+            margin-top: 5px;
+        }
+        h2 { 
+            text-align: center; 
+            margin-bottom: 30px; 
             color: #333;
         }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px;
+        }
+        input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #667eea; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
             font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
         }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
+        button:hover { 
+            background: #5a67d8; 
+        }
+        .error { 
+            background: #fee; 
+            color: #e74c3c; 
+            text-align: center; 
+            margin-bottom: 15px; 
+            padding: 10px;
             border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
+            border-left: 4px solid #e74c3c;
         }
-        button:hover {
-            background: #5a67d8;
+        .success { 
+            background: #d4edda; 
+            color: #155724; 
+            text-align: center; 
+            margin-bottom: 15px; 
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
         }
-        .error {
-            color: red;
+        .link { 
+            text-align: center; 
+            margin-top: 20px; 
+        }
+        .link a { 
+            color: #667eea; 
+            text-decoration: none; 
+        }
+        .link a:hover { 
+            text-decoration: underline; 
+        }
+        .info-text {
             text-align: center;
-            margin-bottom: 10px;
-        }
-        .success {
-            color: green;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .link a {
-            color: #667eea;
-            text-decoration: none;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #999;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Login</h2>
-        <?php if(isset($_GET['msg'])) echo "<div class='success'>Registration successful! Please login.</div>"; ?>
-        <?php if(isset($error)) echo "<div class='error'>$error</div>"; ?>
+        <div class="logo">
+            <div class="logo-icon">📅</div>
+            <div class="logo-text">Event Planner</div>
+        </div>
+        
+        <h2>Login to Your Account</h2>
+        
+        <?php if(isset($_GET['msg']) && $_GET['msg'] == 'registered'): ?>
+            <div class="success">✅ Registration successful! Please login.</div>
+        <?php endif; ?>
+        
+        <?php if($error): ?>
+            <div class="error">❌ <?php echo $error; ?></div>
+        <?php endif; ?>
+        
         <form method="POST">
-            <input type="text" name="username" placeholder="Username or Email" required>
+            <input type="text" name="username" placeholder="Username or Email" required autofocus>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+        
         <div class="link">
-            <a href="register.php">Don't have an account? Register</a>
+            <a href="register.php">Don't have an account? Register here</a>
+        </div>
+        
+        <div class="info-text">
+            Demo Credentials:<br>
+            Admin: username "admin" | password "admin123"<br>
+            User: Register a new account
         </div>
     </div>
 </body>
