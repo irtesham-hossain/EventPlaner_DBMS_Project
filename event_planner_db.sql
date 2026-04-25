@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 14, 2026 at 08:54 PM
+-- Generation Time: Apr 25, 2026 at 08:44 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,7 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`event_id`, `user_id`, `event_name`, `event_date`, `no_of_guests`, `budget`, `venue_id`, `created_at`) VALUES
-(1, 1, 'Birthday', '2026-04-18', 200, 500000.00, 4, '2026-04-14 18:30:29');
+(4, 4, 'test', '2026-04-29', 200, 500000.00, 3, '2026-04-25 11:30:04');
 
 -- --------------------------------------------------------
 
@@ -62,10 +62,8 @@ CREATE TABLE `event_vendors` (
 --
 
 INSERT INTO `event_vendors` (`id`, `event_id`, `vendor_id`) VALUES
-(1, 1, 1),
-(2, 1, 5),
-(3, 1, 2),
-(4, 1, 3);
+(5, 4, 1),
+(6, 4, 5);
 
 -- --------------------------------------------------------
 
@@ -91,15 +89,18 @@ CREATE TABLE `users` (
   `username` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `role` varchar(20) DEFAULT 'user'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `created_at`) VALUES
-(1, 'shayor', 'shayor.hossain01@gmail.com', '$2y$10$GkBK/dGoP5pIOJZczjFcoOPEowy9Ir0TldeNlgMXu52P9o9kA3eM.', '2026-04-14 18:29:54');
+INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `created_at`, `role`) VALUES
+(1, 'admin', 'admin@gmail.com', '$2y$10$ydOZXgPlPhCkluJzbAn8jO9CDlbQs5uKXDHj6jAxswrRogSWvZuGq', '2026-04-25 11:27:38', 'admin'),
+(4, 'user1', 'user1@gmail.com', '$2y$10$YyMclfiAFvNAN658VZXJ..JbOXjArCCt7XEGJiSG566RQQpsRAptq', '2026-04-25 11:29:39', 'user'),
+(5, 'user2', 'user2@gmail.com', '$2y$10$lhotS8irQ7A4hMHQJ7uMIuXnkLfYI6836wqi306PTgz7V7UuRhqcq', '2026-04-25 11:36:58', 'user');
 
 -- --------------------------------------------------------
 
@@ -203,13 +204,13 @@ ALTER TABLE `venues`
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `event_vendors`
 --
 ALTER TABLE `event_vendors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `guests`
@@ -221,7 +222,7 @@ ALTER TABLE `guests`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `vendors`
